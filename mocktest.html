@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mock Test</title>
+
+<style>
+body{
+font-family:Poppins;
+margin:0;
+padding:20px;
+background:#f5f7fb;
+}
+
+.container{
+max-width:900px;
+margin:auto;
+}
+
+.topbar{
+display:flex;
+justify-content:space-between;
+background:#6c63ff;
+color:white;
+padding:12px 20px;
+border-radius:10px;
+margin-bottom:20px;
+}
+
+.question{
+background:white;
+padding:15px;
+border-radius:10px;
+margin-bottom:15px;
+box-shadow:0 5px 15px rgba(0,0,0,0.1);
+}
+
+input{
+width:100%;
+padding:8px;
+margin-top:8px;
+}
+
+button{
+padding:10px 20px;
+background:#6c63ff;
+color:white;
+border:none;
+border-radius:8px;
+cursor:pointer;
+}
+
+.result{
+background:white;
+padding:20px;
+border-radius:10px;
+margin-top:20px;
+display:none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="topbar">
+<h3 id="title"></h3>
+<div id="timer"></div>
+</div>
+
+<form id="quizForm"></form>
+
+<button onclick="submitTest()">Submit</button>
+
+<div id="resultBox" class="result"></div>
+
+</div>
+
+<script>
+    let submitted = false;
+
+// GET DATA
+const params = new URLSearchParams(window.location.search);
+const subject = params.get("subject");
+const time = params.get("time");
+
+document.getElementById("title").innerText =
+subject.toUpperCase() + " MOCK TEST";
+
+// ✅ QUESTION BANK WITH ANSWERS
+const questionBank = {
+
+maths: [
+{q:"2+2=?", answer:"4"},
+{q:"5×3=?", answer:"15"},
+{q:"Square of 6?", answer:"36"},
+{q:"10÷2=?", answer:"5"},
+{q:"7+8=?", answer:"15"}
+],
+
+java: [
+{q:"Java keyword for inheritance?", answer:"extends"},
+{q:"Method to start program?", answer:"main"},
+{q:"Primitive type example?", answer:"int"},
+{q:"OOP stands for?", answer:"object oriented programming"},
+{q:"Java is platform?", answer:"independent"}
+],
+
+ds: [
+{q:"Stack follows?", answer:"lifo"},
+{q:"Queue follows?", answer:"fifo"},
+{q:"Binary tree max children?", answer:"2"},
+{q:"Linked list stores?", answer:"nodes"},
+{q:"Array index starts from?", answer:"0"}
+]
+
+};
+
+// SELECT QUESTIONS
+const questions = questionBank[subject];
+
+// LOAD QUESTIONS
+const form = document.getElementById("quizForm");
+
+questions.forEach((q,index)=>{
+let div=document.createElement("div");
+div.classList.add("question");
+
+div.innerHTML=`
+<p><b>${index+1}. ${q.q}</b></p>
+<input type="text" name="q${index}" placeholder="Type your answer">
+`;
+
+form.appendChild(div);
+});
+
+// TIMER
+let totalSeconds = time * 60;
+
+let timer = setInterval(()=>{
+let m=Math.floor(totalSeconds/60);
+let s=totalSeconds%60;
+if(s<10)s="0"+s;
+
+document.getElementById("timer").innerText = m+":"+s;
+
+totalSeconds--;
+
+if(totalSeconds<0){
+clearInterval(timer);
+submitTest();
+}
+},1000);
+
+// ✅ SUBMIT WITH CORRECT CHECK
+function submitTest(){
+
+// 🚫 Prevent multiple submissions
+if(submitted){
+alert("Test already submitted!");
+return;
+}
+
+submitted = true;
+
+clearInterval(timer);
+
+let score=0;
+let result="";
+
+questions.forEach((q,i)=>{
+
+let input=document.querySelector(`input[name="q${i}"]`);
+let userAnswer = input.value.trim().toLowerCase();
+let correctAnswer = q.answer.toLowerCase();
+
+// Disable input after submit
+input.disabled = true;
+
+if(userAnswer === correctAnswer){
+score++;
+result += `<p>Q${i+1}: ✅ Correct</p>`;
+}else{
+result += `<p>Q${i+1}: ❌ Wrong (Correct: ${q.answer})</p>`;
+}
+
+});
+
+// Disable button
+document.querySelector("button").disabled = true;
+
+let box=document.getElementById("resultBox");
+box.style.display="block";
+box.innerHTML=`<h3>Score: ${score}/${questions.length}</h3>${result}`;
+
+}
+</script>
+
+</body>
+</html>

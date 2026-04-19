@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MCQ Test</title>
+
+<style>
+body{
+font-family:Poppins;
+margin:0;
+padding:20px;
+background:#f5f7fb;
+}
+
+.container{
+max-width:900px;
+margin:auto;
+}
+
+.topbar{
+display:flex;
+justify-content:space-between;
+background:#6c63ff;
+color:white;
+padding:12px 20px;
+border-radius:10px;
+margin-bottom:20px;
+}
+
+.question{
+background:white;
+padding:15px;
+border-radius:10px;
+margin-bottom:15px;
+box-shadow:0 5px 15px rgba(0,0,0,0.1);
+}
+
+button{
+padding:10px 20px;
+background:#6c63ff;
+color:white;
+border:none;
+border-radius:8px;
+cursor:pointer;
+}
+
+.result{
+background:white;
+padding:20px;
+border-radius:10px;
+margin-top:20px;
+display:none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="topbar">
+<h3 id="title"></h3>
+<div id="timer">Time</div>
+</div>
+
+<form id="quizForm"></form>
+
+<button onclick="submitTest()">Submit</button>
+
+<div id="resultBox" class="result"></div>
+
+</div>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+<script>
+    const firebaseConfig = {
+  apiKey: "AIzaSyDrQTS62K9wTKKbdsQaeK-5baKV5L680Fg",
+  authDomain: "mystudyspace-2ef1c.firebaseapp.com",
+  projectId: "mystudyspace-2ef1c",
+  storageBucket: "mystudyspace-2ef1c.appspot.com",
+  messagingSenderId: "345950021528",
+  appId: "1:345950021528:web:2815749a7a4876ba006ded",
+  measurementId: "G-08F902PJ0V"
+};
+
+// ✅ MUST ADD THIS
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+
+    let submitted = false;
+
+// GET DATA
+const params = new URLSearchParams(window.location.search);
+const subject = params.get("subject");
+const difficulty = params.get("difficulty");
+if(!subject || !difficulty){
+document.body.innerHTML = "<h2>Please start test from Tasks page</h2>";
+throw new Error("Missing subject/difficulty");
+}
+
+document.getElementById("title").innerText =
+subject.toUpperCase() + " - " + difficulty.toUpperCase();
+
+// QUESTION BANK
+const questionBank = {
+
+math: {
+easy: [
+{q:"2+2=?", options:["2","3","4","5"], answer:"4"},
+{q:"5-2=?", options:["1","2","3","4"], answer:"3"},
+{q:"10/2=?", options:["2","5","10","8"], answer:"5"},
+{q:"3+6=?", options:["7","8","9","10"], answer:"9"},
+{q:"2 + 3 = ?", options:["4","5","6","7"], answer:"5"},
+{q:"5 + 7 = ?", options:["10","11","12","13"], answer:"12"},
+{q:"9 - 4 = ?", options:["3","4","5","6"], answer:"5"},
+{q:"10 - 6 = ?", options:["2","3","4","5"], answer:"4"},
+{q:"3 * 4 = ?", options:["7","10","12","14"], answer:"12"},
+{q:"8 * 2 = ?", options:["14","15","16","18"], answer:"16"},
+{q:"12 ÷ 3 = ?", options:["2","3","4","5"], answer:"4"},
+{q:"15 ÷ 5 = ?", options:["2","3","4","5"], answer:"3"},
+{q:"6 + 8 = ?", options:["12","13","14","15"], answer:"14"},
+{q:"7 + 9 = ?", options:["14","15","16","17"], answer:"16"},
+
+{q:"20 - 10 = ?", options:["5","8","10","12"], answer:"10"},
+{q:"18 - 9 = ?", options:["7","8","9","10"], answer:"9"},
+{q:"4 * 5 = ?", options:["15","20","25","30"], answer:"20"},
+{q:"3 * 6 = ?", options:["12","15","18","21"], answer:"18"},
+{q:"16 ÷ 4 = ?", options:["2","3","4","5"], answer:"4"},
+{q:"21 ÷ 7 = ?", options:["2","3","4","5"], answer:"3"},
+{q:"11 + 5 = ?", options:["14","15","16","17"], answer:"16"},
+{q:"13 + 6 = ?", options:["17","18","19","20"], answer:"19"},
+{q:"25 - 5 = ?", options:["15","18","20","22"], answer:"20"},
+{q:"30 - 10 = ?", options:["10","15","20","25"], answer:"20"},
+
+{q:"2 * 9 = ?", options:["16","17","18","19"], answer:"18"},
+{q:"5 * 5 = ?", options:["20","25","30","35"], answer:"25"},
+{q:"18 ÷ 2 = ?", options:["7","8","9","10"], answer:"9"},
+{q:"24 ÷ 6 = ?", options:["2","3","4","5"], answer:"4"},
+{q:"14 + 3 = ?", options:["15","16","17","18"], answer:"17"},
+{q:"19 + 1 = ?", options:["18","19","20","21"], answer:"20"},
+{q:"22 - 2 = ?", options:["18","19","20","21"], answer:"20"},
+{q:"17 - 7 = ?", options:["8","9","10","11"], answer:"10"},
+{q:"6 * 3 = ?", options:["15","16","17","18"], answer:"18"},
+{q:"9 * 4 = ?", options:["32","34","36","38"], answer:"36"},
+
+{q:"20 ÷ 4 = ?", options:["4","5","6","7"], answer:"5"},
+{q:"27 ÷ 3 = ?", options:["7","8","9","10"], answer:"9"},
+{q:"8 + 11 = ?", options:["17","18","19","20"], answer:"19"},
+{q:"15 + 4 = ?", options:["17","18","19","20"], answer:"19"},
+{q:"40 - 20 = ?", options:["10","15","20","25"], answer:"20"},
+{q:"35 - 5 = ?", options:["25","28","30","32"], answer:"30"},
+{q:"7 * 5 = ?", options:["30","32","35","40"], answer:"35"},
+{q:"10 * 3 = ?", options:["25","28","30","32"], answer:"30"},
+{q:"36 ÷ 6 = ?", options:["5","6","7","8"], answer:"6"},
+{q:"45 ÷ 5 = ?", options:["7","8","9","10"], answer:"9"},
+{q:"7-3=?", options:["3","4","5","6"], answer:"4"}
+],
+medium: [
+{q:"12*2=?", options:["24","22","20","26"], answer:"24"},
+{q:"15/3=?", options:["3","4","5","6"], answer:"5"},
+{q:"9*3=?", options:["27","21","18","24"], answer:"27"},
+{q:"20-7=?", options:["12","13","14","15"], answer:"13"},
+{q:"6*6=?", options:["30","32","36","40"], answer:"36"},
+{q:"12 × 3 = ?", options:["24","30","36","42"], answer:"36"},
+{q:"15 × 2 = ?", options:["25","30","35","40"], answer:"30"},
+{q:"18 ÷ 3 = ?", options:["5","6","7","8"], answer:"6"},
+{q:"20 ÷ 4 = ?", options:["4","5","6","7"], answer:"5"},
+{q:"25 + 17 = ?", options:["40","41","42","43"], answer:"42"},
+
+{q:"30 - 12 = ?", options:["16","17","18","19"], answer:"18"},
+{q:"9 × 7 = ?", options:["56","63","72","49"], answer:"63"},
+{q:"8 × 6 = ?", options:["42","48","54","56"], answer:"48"},
+{q:"36 ÷ 6 = ?", options:["5","6","7","8"], answer:"6"},
+{q:"49 ÷ 7 = ?", options:["5","6","7","8"], answer:"7"},
+
+{q:"14 + 28 = ?", options:["40","41","42","43"], answer:"42"},
+{q:"50 - 25 = ?", options:["20","25","30","35"], answer:"25"},
+{q:"11 × 4 = ?", options:["40","42","44","46"], answer:"44"},
+{q:"7 × 8 = ?", options:["54","56","58","60"], answer:"56"},
+{q:"81 ÷ 9 = ?", options:["7","8","9","10"], answer:"9"},
+
+{q:"64 ÷ 8 = ?", options:["6","7","8","9"], answer:"8"},
+{q:"22 + 19 = ?", options:["39","40","41","42"], answer:"41"},
+{q:"45 - 18 = ?", options:["25","26","27","28"], answer:"27"},
+{q:"13 × 3 = ?", options:["36","39","42","45"], answer:"39"},
+{q:"6 × 9 = ?", options:["48","52","54","56"], answer:"54"},
+
+{q:"72 ÷ 8 = ?", options:["7","8","9","10"], answer:"9"},
+{q:"90 ÷ 10 = ?", options:["7","8","9","10"], answer:"9"},
+{q:"27 + 35 = ?", options:["60","61","62","63"], answer:"62"},
+{q:"100 - 45 = ?", options:["50","55","60","65"], answer:"55"},
+{q:"16 × 2 = ?", options:["30","32","34","36"], answer:"32"},
+
+{q:"14 × 5 = ?", options:["60","65","70","75"], answer:"70"},
+{q:"56 ÷ 7 = ?", options:["6","7","8","9"], answer:"8"},
+{q:"18 × 2 = ?", options:["34","35","36","37"], answer:"36"},
+{q:"84 ÷ 6 = ?", options:["12","13","14","15"], answer:"14"},
+{q:"33 + 27 = ?", options:["58","59","60","61"], answer:"60"},
+
+{q:"70 - 29 = ?", options:["40","41","42","43"], answer:"41"},
+{q:"9 × 9 = ?", options:["72","81","90","99"], answer:"81"},
+{q:"48 ÷ 6 = ?", options:["6","7","8","9"], answer:"8"},
+{q:"75 ÷ 5 = ?", options:["10","12","15","20"], answer:"15"},
+{q:"19 + 24 = ?", options:["41","42","43","44"], answer:"43"},
+
+{q:"60 - 32 = ?", options:["26","27","28","29"], answer:"28"},
+{q:"21 × 2 = ?", options:["40","41","42","43"], answer:"42"},
+{q:"96 ÷ 8 = ?", options:["10","11","12","13"], answer:"12"},
+{q:"5 × 12 = ?", options:["50","55","60","65"], answer:"60"},
+{q:"44 + 16 = ?", options:["58","59","60","61"], answer:"60"},
+
+{q:"88 ÷ 11 = ?", options:["6","7","8","9"], answer:"8"},
+{q:"32 × 2 = ?", options:["60","62","64","66"], answer:"64"},
+{q:"27 × 2 = ?", options:["50","52","54","56"], answer:"54"},
+{q:"100 ÷ 4 = ?", options:["20","25","30","35"], answer:"25"},
+{q:"66 - 26 = ?", options:["38","39","40","41"], answer:"40"}
+],
+hard: [
+{q:"√144=?", options:["10","11","12","13"], answer:"12"},
+{q:"25*4=?", options:["80","90","100","120"], answer:"100"},
+{q:"50/5=?", options:["5","10","15","20"], answer:"10"},
+{q:"11*11=?", options:["111","121","131","141"], answer:"121"},
+{q:"144/12=?", options:["10","11","12","13"], answer:"12"},
+{q:"What is the value of π (pi) approximately?", options:["2.14","3.14","4.13","3.41"], answer:"3.14"},
+{q:"Which is a prime number?", options:["9","15","17","21"], answer:"17"},
+{q:"What is the square root of 121?", options:["10","11","12","13"], answer:"11"},
+{q:"What is the cube of 3?", options:["6","9","27","81"], answer:"27"},
+{q:"What is the formula for area of a circle?", options:["πr²","2πr","πd","r²"], answer:"πr²"},
+
+{q:"What is the formula for perimeter of a rectangle?", options:["l×b","2(l+b)","l+b","2l+b"], answer:"2(l+b)"},
+{q:"What is the value of 2⁵?", options:["16","32","64","25"], answer:"32"},
+{q:"Which number is divisible by 3?", options:["14","18","22","25"], answer:"18"},
+{q:"What is the LCM of 4 and 6?", options:["10","12","14","24"], answer:"12"},
+{q:"What is the HCF of 8 and 12?", options:["2","3","4","6"], answer:"4"},
+
+{q:"What is a rational number?", options:["Whole number","Fraction","Irrational","Prime"], answer:"Fraction"},
+{q:"Which is an irrational number?", options:["1/2","0.5","√2","2"], answer:"√2"},
+{q:"What is the next prime after 7?", options:["9","10","11","13"], answer:"11"},
+{q:"What is the sum of angles in a triangle?", options:["90°","180°","270°","360°"], answer:"180°"},
+{q:"What is the sum of angles in a quadrilateral?", options:["180°","360°","270°","540°"], answer:"360°"},
+
+{q:"What is the formula for simple interest?", options:["P×R×T/100","P+R+T","P×R×T","P/R/T"], answer:"P×R×T/100"},
+{q:"What is the unit of area?", options:["cm","cm²","cm³","m"], answer:"cm²"},
+{q:"What is the unit of volume?", options:["cm","cm²","cm³","m²"], answer:"cm³"},
+{q:"What is the value of √64?", options:["6","7","8","9"], answer:"8"},
+{q:"Which is a perfect square?", options:["15","20","25","30"], answer:"25"},
+
+{q:"What is the reciprocal of 5?", options:["1/5","5","-5","0"], answer:"1/5"},
+{q:"What is the value of 10²?", options:["20","50","100","200"], answer:"100"},
+{q:"What is a polygon?", options:["3D shape","Closed figure","Open shape","Line"], answer:"Closed figure"},
+{q:"What is the smallest even prime number?", options:["1","2","3","4"], answer:"2"},
+{q:"What is the largest 2-digit number?", options:["98","99","100","97"], answer:"99"},
+
+{q:"What is a factor of 24?", options:["5","7","6","11"], answer:"6"},
+{q:"Which number is not prime?", options:["2","3","5","9"], answer:"9"},
+{q:"What is the value of 0²?", options:["0","1","Undefined","2"], answer:"0"},
+{q:"What is the square of 9?", options:["18","27","81","72"], answer:"81"},
+{q:"What is the cube root of 27?", options:["2","3","4","5"], answer:"3"},
+
+{q:"What is the degree of a right angle?", options:["45°","90°","180°","360°"], answer:"90°"},
+{q:"What is the degree of a straight angle?", options:["90°","120°","180°","360°"], answer:"180°"},
+{q:"What is a diameter?", options:["Half radius","Twice radius","Line through center","Circle edge"], answer:"Line through center"},
+{q:"What is a radius?", options:["Center to edge","Edge to edge","Diameter","None"], answer:"Center to edge"},
+{q:"What is an equation?", options:["Statement with =","Number","Symbol","Shape"], answer:"Statement with ="},
+
+{q:"What is a variable?", options:["Fixed value","Changing value","Constant","Number"], answer:"Changing value"},
+{q:"What is a constant?", options:["Changing value","Fixed value","Equation","Variable"], answer:"Fixed value"},
+{q:"What is a fraction?", options:["Whole number","Part of whole","Decimal","Integer"], answer:"Part of whole"},
+{q:"What is a decimal?", options:["Fraction form","Number with point","Integer","None"], answer:"Number with point"},
+{q:"What is a percentage?", options:["Out of 10","Out of 50","Out of 100","Out of 1000"], answer:"Out of 100"},
+
+{q:"What is mean?", options:["Average","Middle value","Most frequent","Range"], answer:"Average"},
+{q:"What is median?", options:["Average","Middle value","Most frequent","Range"], answer:"Middle value"},
+{q:"What is mode?", options:["Average","Middle value","Most frequent","Range"], answer:"Most frequent"},
+{q:"What is range?", options:["Difference","Sum","Average","Median"], answer:"Difference"},
+{q:"What is probability?", options:["Chance","Distance","Time","Speed"], answer:"Chance"}
+]
+},
+
+cs: {
+easy: [
+{q:"CPU stands for?", options:["Central Processing Unit","Computer Unit","Core Unit","None"], answer:"Central Processing Unit"},
+{q:"RAM is?", options:["Memory","CPU","Storage","Input"], answer:"Memory"},
+{q:"Mouse is?", options:["Input","Output","Storage","None"], answer:"Input"},
+{q:"Keyboard is?", options:["Input","Output","Storage","None"], answer:"Input"},
+{q:"Monitor is?", options:["Input","Output","Storage","None"], answer:"Output"},
+{q:"CPU stands for?", options:["Central Processing Unit","Computer Unit","Control Unit","Central Program Unit"], answer:"Central Processing Unit"},
+{q:"RAM is?", options:["Temporary memory","Permanent memory","Storage device","Output device"], answer:"Temporary memory"},
+{q:"Keyboard is an?", options:["Input device","Output device","Storage device","Processing device"], answer:"Input device"},
+{q:"Monitor is an?", options:["Output device","Input device","Storage device","None"], answer:"Output device"},
+{q:"Mouse is an?", options:["Input device","Output device","Storage device","None"], answer:"Input device"},
+
+{q:"Full form of HTML?", options:["Hyper Text Markup Language","High Text Machine Language","Hyper Tool Multi Language","None"], answer:"Hyper Text Markup Language"},
+{q:"Full form of CSS?", options:["Cascading Style Sheets","Computer Style Sheet","Creative Style System","None"], answer:"Cascading Style Sheets"},
+{q:"JS stands for?", options:["JavaScript","JavaSystem","JointScript","None"], answer:"JavaScript"},
+{q:"Binary number system uses?", options:["0 and 1","1 and 2","0 to 9","None"], answer:"0 and 1"},
+{q:"Primary memory is?", options:["RAM","Hard disk","Pen drive","CD"], answer:"RAM"},
+
+{q:"Hard disk is?", options:["Storage device","Input device","Output device","None"], answer:"Storage device"},
+{q:"Printer is?", options:["Output device","Input device","Storage device","None"], answer:"Output device"},
+{q:"Scanner is?", options:["Input device","Output device","Storage device","None"], answer:"Input device"},
+{q:"ALU stands for?", options:["Arithmetic Logic Unit","Advanced Logic Unit","Arithmetic Link Unit","None"], answer:"Arithmetic Logic Unit"},
+{q:"CU stands for?", options:["Control Unit","Central Unit","Compute Unit","None"], answer:"Control Unit"},
+
+{q:"Operating system is?", options:["System software","Application software","Hardware","None"], answer:"System software"},
+{q:"Windows is?", options:["Operating system","Application","Hardware","None"], answer:"Operating system"},
+{q:"MS Word is?", options:["Application software","System software","Hardware","None"], answer:"Application software"},
+{q:"Excel is used for?", options:["Calculations","Drawing","Gaming","None"], answer:"Calculations"},
+{q:"PowerPoint is used for?", options:["Presentations","Coding","Storage","None"], answer:"Presentations"},
+
+{q:"Internet is?", options:["Network of networks","Single computer","Software","None"], answer:"Network of networks"},
+{q:"WWW stands for?", options:["World Wide Web","Web World Wide","Wide Web World","None"], answer:"World Wide Web"},
+{q:"Email is used for?", options:["Communication","Storage","Processing","None"], answer:"Communication"},
+{q:"Browser is used to?", options:["Access websites","Store data","Process data","None"], answer:"Access websites"},
+{q:"Google Chrome is a?", options:["Browser","OS","Hardware","None"], answer:"Browser"},
+
+{q:"URL stands for?", options:["Uniform Resource Locator","Universal Resource Link","Uniform Read Link","None"], answer:"Uniform Resource Locator"},
+{q:"IP address is?", options:["Unique address of device","Password","Software","None"], answer:"Unique address of device"},
+{q:"LAN stands for?", options:["Local Area Network","Large Area Network","Long Area Network","None"], answer:"Local Area Network"},
+{q:"WAN stands for?", options:["Wide Area Network","Wireless Area Network","Web Area Network","None"], answer:"Wide Area Network"},
+{q:"Modem is used for?", options:["Internet connection","Printing","Storage","None"], answer:"Internet connection"},
+
+{q:"Software means?", options:["Programs","Hardware","Devices","None"], answer:"Programs"},
+{q:"Hardware means?", options:["Physical parts","Programs","Data","None"], answer:"Physical parts"},
+{q:"File is?", options:["Collection of data","Device","Program","None"], answer:"Collection of data"},
+{q:"Folder is?", options:["Container for files","File","Program","None"], answer:"Container for files"},
+{q:"Save means?", options:["Store data","Delete data","Print data","None"], answer:"Store data"},
+
+{q:"Delete means?", options:["Remove data","Store data","Print data","None"], answer:"Remove data"},
+{q:"Copy means?", options:["Duplicate data","Delete data","Move data","None"], answer:"Duplicate data"},
+{q:"Paste means?", options:["Insert copied data","Delete data","Store data","None"], answer:"Insert copied data"},
+{q:"Cut means?", options:["Move data","Copy data","Delete permanently","None"], answer:"Move data"},
+{q:"Undo means?", options:["Reverse action","Repeat action","Delete action","None"], answer:"Reverse action"},
+
+{q:"Redo means?", options:["Repeat action","Undo action","Delete action","None"], answer:"Repeat action"},
+{q:"Desktop is?", options:["Main screen","Program","File","None"], answer:"Main screen"},
+{q:"Icon is?", options:["Small picture","Program","File","None"], answer:"Small picture"},
+{q:"Taskbar is?", options:["Bar at bottom","File","Program","None"], answer:"Bar at bottom"},
+{q:"Recycle bin is?", options:["Stores deleted files","Stores programs","Stores internet","None"], answer:"Stores deleted files"}
+],
+medium: [
+{q:"HTML stands for?", options:["Hyper Text Markup Language","High Text","None","Hyper Tool"], answer:"Hyper Text Markup Language"},
+{q:"CSS is used for?", options:["Design","Logic","Database","None"], answer:"Design"},
+{q:"JS is?", options:["Programming","Style","Database","None"], answer:"Programming"},
+{q:"Binary uses?", options:["0,1","1,2","2,3","None"], answer:"0,1"},
+{q:"IP stands for?", options:["Internet Protocol","Internal","Input","None"], answer:"Internet Protocol"},
+{q:"What is the function of an operating system?", options:["Manage hardware and software","Create documents","Play games","None"], answer:"Manage hardware and software"},
+{q:"Which of the following is system software?", options:["Windows","MS Word","Excel","PowerPoint"], answer:"Windows"},
+{q:"Which language is used to create web pages?", options:["HTML","C","Java","Python"], answer:"HTML"},
+{q:"CSS is used for?", options:["Styling web pages","Programming logic","Database","Networking"], answer:"Styling web pages"},
+{q:"JavaScript is mainly used for?", options:["Interactivity","Styling","Storage","None"], answer:"Interactivity"},
+
+{q:"Which of the following is not an input device?", options:["Monitor","Keyboard","Mouse","Scanner"], answer:"Monitor"},
+{q:"Which memory is volatile?", options:["RAM","ROM","Hard disk","CD"], answer:"RAM"},
+{q:"ROM is used for?", options:["Permanent storage","Temporary storage","Processing","None"], answer:"Permanent storage"},
+{q:"Which device connects computer to internet?", options:["Modem","Printer","Keyboard","Monitor"], answer:"Modem"},
+{q:"Which is an example of application software?", options:["MS Excel","Linux","Windows","BIOS"], answer:"MS Excel"},
+
+{q:"What is the brain of computer?", options:["CPU","RAM","Hard disk","Monitor"], answer:"CPU"},
+{q:"Which part performs calculations?", options:["ALU","CU","RAM","ROM"], answer:"ALU"},
+{q:"Control Unit is responsible for?", options:["Controlling operations","Storage","Output","None"], answer:"Controlling operations"},
+{q:"Which is secondary memory?", options:["Hard disk","RAM","Register","Cache"], answer:"Hard disk"},
+{q:"Cache memory is?", options:["Fast memory","Slow memory","External memory","None"], answer:"Fast memory"},
+
+{q:"Which protocol is used for web browsing?", options:["HTTP","FTP","SMTP","TCP"], answer:"HTTP"},
+{q:"Which protocol is used to send emails?", options:["SMTP","HTTP","FTP","IP"], answer:"SMTP"},
+{q:"Which protocol is used to transfer files?", options:["FTP","HTTP","SMTP","IP"], answer:"FTP"},
+{q:"IP address identifies?", options:["Device","User","Program","None"], answer:"Device"},
+{q:"DNS is used for?", options:["Domain to IP conversion","IP to domain","Storage","None"], answer:"Domain to IP conversion"},
+
+{q:"Which is high-level language?", options:["Java","Assembly","Machine","Binary"], answer:"Java"},
+{q:"Which language is closest to machine?", options:["Assembly","Java","Python","C"], answer:"Assembly"},
+{q:"Compiler converts?", options:["Whole program at once","Line by line","Only errors","None"], answer:"Whole program at once"},
+{q:"Interpreter converts?", options:["Line by line","Whole program","Only syntax","None"], answer:"Line by line"},
+{q:"Bug in program means?", options:["Error","Feature","Code","None"], answer:"Error"},
+
+{q:"Which data structure uses FIFO?", options:["Queue","Stack","Array","Tree"], answer:"Queue"},
+{q:"Which data structure uses LIFO?", options:["Stack","Queue","Array","Tree"], answer:"Stack"},
+{q:"Array stores?", options:["Same type data","Different data","Only numbers","None"], answer:"Same type data"},
+{q:"Linked list stores?", options:["Nodes","Numbers only","Files","None"], answer:"Nodes"},
+{q:"Stack operation?", options:["Push & Pop","Insert & Delete","Add & Remove","None"], answer:"Push & Pop"},
+
+{q:"Which is DBMS?", options:["MySQL","HTML","CSS","Java"], answer:"MySQL"},
+{q:"Database is?", options:["Organized data","Random data","Program","None"], answer:"Organized data"},
+{q:"Primary key is?", options:["Unique identifier","Duplicate","Optional","None"], answer:"Unique identifier"},
+{q:"Table consists of?", options:["Rows & Columns","Files","Programs","None"], answer:"Rows & Columns"},
+{q:"SQL is used for?", options:["Database queries","Styling","Programming","None"], answer:"Database queries"},
+
+{q:"Which is not a programming language?", options:["HTML","Java","Python","C"], answer:"HTML"},
+{q:"Loop is used for?", options:["Repetition","Decision","Storage","None"], answer:"Repetition"},
+{q:"If statement is used for?", options:["Decision making","Looping","Storage","None"], answer:"Decision making"},
+{q:"Function is?", options:["Reusable code","Loop","Variable","None"], answer:"Reusable code"},
+{q:"Variable stores?", options:["Data","Program","File","None"], answer:"Data"},
+
+{q:"Which is not an OS?", options:["Google","Windows","Linux","Mac"], answer:"Google"},
+{q:"Linux is?", options:["Operating system","Browser","App","None"], answer:"Operating system"},
+{q:"Android is based on?", options:["Linux","Windows","Java","None"], answer:"Linux"},
+{q:"Which is cloud storage?", options:["Google Drive","RAM","Hard disk","ROM"], answer:"Google Drive"},
+{q:"Firewall is used for?", options:["Security","Storage","Processing","None"], answer:"Security"}
+],
+hard: [
+{q:"OSI layers?", options:["7","5","6","8"], answer:"7"},
+{q:"SQL used for?", options:["Database","Design","Logic","None"], answer:"Database"},
+{q:"Compiler does?", options:["Translate","Execute","Store","None"], answer:"Translate"},
+{q:"HTTP stands for?", options:["Hyper Text Transfer Protocol","None","High Transfer","None"], answer:"Hyper Text Transfer Protocol"},
+{q:"Cache memory is?", options:["Fast","Slow","External","None"], answer:"Fast"},
+{q:"Which data structure uses LIFO?", options:["Queue","Stack","Array","Tree"], answer:"Stack"},
+{q:"Which data structure uses FIFO?", options:["Stack","Queue","Tree","Graph"], answer:"Queue"},
+{q:"Time complexity of binary search?", options:["O(n)","O(log n)","O(n log n)","O(1)"], answer:"O(log n)"},
+{q:"Which sorting is fastest in average case?", options:["Bubble","Insertion","Quick","Selection"], answer:"Quick"},
+{q:"Which sorting is stable?", options:["Quick","Heap","Merge","Selection"], answer:"Merge"},
+
+{q:"Which is not a programming paradigm?", options:["OOP","Functional","Procedural","Mechanical"], answer:"Mechanical"},
+{q:"Encapsulation means?", options:["Hiding data","Inheritance","Polymorphism","Abstraction"], answer:"Hiding data"},
+{q:"Polymorphism allows?", options:["Multiple forms","Single form","No form","None"], answer:"Multiple forms"},
+{q:"Inheritance allows?", options:["Reuse code","Delete code","Hide code","None"], answer:"Reuse code"},
+{q:"Abstraction means?", options:["Hiding complexity","Showing all","Deleting data","None"], answer:"Hiding complexity"},
+
+{q:"Which layer is responsible for routing?", options:["Application","Transport","Network","Data Link"], answer:"Network"},
+{q:"Which protocol is connection-oriented?", options:["UDP","TCP","IP","HTTP"], answer:"TCP"},
+{q:"Which protocol is faster but unreliable?", options:["TCP","UDP","HTTP","FTP"], answer:"UDP"},
+{q:"HTTP works on which port?", options:["80","21","25","110"], answer:"80"},
+{q:"FTP stands for?", options:["File Transfer Protocol","Fast Transfer Process","File Tech Protocol","None"], answer:"File Transfer Protocol"},
+
+{q:"Which memory is volatile?", options:["RAM","ROM","Hard Disk","SSD"], answer:"RAM"},
+{q:"Which memory is non-volatile?", options:["RAM","Cache","ROM","Register"], answer:"ROM"},
+{q:"Cache memory is used for?", options:["Speed","Storage","Backup","None"], answer:"Speed"},
+{q:"Virtual memory uses?", options:["Hard disk","RAM","Cache","CPU"], answer:"Hard disk"},
+{q:"Primary memory includes?", options:["RAM","Hard disk","CD","USB"], answer:"RAM"},
+
+{q:"Which is not an OS?", options:["Windows","Linux","Oracle","macOS"], answer:"Oracle"},
+{q:"Deadlock occurs when?", options:["No process runs","All waiting","CPU idle","None"], answer:"All waiting"},
+{q:"Process scheduling is done by?", options:["OS","CPU","User","Compiler"], answer:"OS"},
+{q:"Multitasking means?", options:["Many tasks","Single task","No task","None"], answer:"Many tasks"},
+{q:"Kernel is?", options:["Core of OS","Application","Hardware","None"], answer:"Core of OS"},
+
+{q:"Which is not a DBMS?", options:["MySQL","Oracle","MongoDB","HTML"], answer:"HTML"},
+{q:"SQL is used for?", options:["Database","Design","Logic","None"], answer:"Database"},
+{q:"Primary key is?", options:["Unique","Duplicate","Optional","None"], answer:"Unique"},
+{q:"Foreign key is?", options:["Reference","Primary","Duplicate","None"], answer:"Reference"},
+{q:"Normalization reduces?", options:["Redundancy","Speed","Memory","None"], answer:"Redundancy"},
+
+{q:"Which is not a loop?", options:["for","while","if","do-while"], answer:"if"},
+{q:"Compiler converts?", options:["Source to machine","Machine to source","Binary to text","None"], answer:"Source to machine"},
+{q:"Interpreter executes?", options:["Line by line","Whole code","Binary","None"], answer:"Line by line"},
+{q:"Recursion means?", options:["Function calls itself","Loop","Condition","None"], answer:"Function calls itself"},
+{q:"Array stores?", options:["Same type","Different type","None","Objects"], answer:"Same type"},
+
+{q:"Which is not a search algorithm?", options:["Binary","Linear","Bubble","None"], answer:"Bubble"},
+{q:"Graph consists of?", options:["Vertices & edges","Nodes only","Edges only","None"], answer:"Vertices & edges"},
+{q:"Tree has?", options:["Root","Cycle","Loop","None"], answer:"Root"},
+{q:"Linked list uses?", options:["Pointers","Index","Hash","None"], answer:"Pointers"},
+{q:"Stack overflow occurs when?", options:["Full","Empty","Half","None"], answer:"Full"},
+
+{q:"Which is not a network topology?", options:["Star","Ring","Bus","Loop"], answer:"Loop"},
+{q:"IP address is?", options:["Unique ID","Name","Code","None"], answer:"Unique ID"},
+{q:"DNS converts?", options:["Name to IP","IP to name","Binary","None"], answer:"Name to IP"},
+{q:"Firewall is used for?", options:["Security","Speed","Storage","None"], answer:"Security"},
+{q:"Encryption means?", options:["Secure data","Delete data","Copy data","None"], answer:"Secure data"}
+]
+},
+
+physics: {
+easy: [
+{q:"Unit of force?", options:["Newton","Joule","Watt","Volt"], answer:"Newton"},
+{q:"Gravity?", options:["Force","Energy","Power","None"], answer:"Force"},
+{q:"Light speed?", options:["3x10^8","3x10^6","3x10^5","None"], answer:"3x10^8"},
+{q:"Energy unit?", options:["Joule","Watt","Volt","Amp"], answer:"Joule"},
+{q:"Power unit?", options:["Watt","Joule","Volt","Amp"], answer:"Watt"},
+{q:"Unit of force?", options:["Newton","Joule","Watt","Volt"], answer:"Newton"},
+{q:"Unit of energy?", options:["Joule","Watt","Volt","Ampere"], answer:"Joule"},
+{q:"Unit of power?", options:["Watt","Joule","Volt","Newton"], answer:"Watt"},
+{q:"Speed of light?", options:["3x10^8 m/s","3x10^6 m/s","3x10^5 m/s","None"], answer:"3x10^8 m/s"},
+{q:"Gravity is a?", options:["Force","Energy","Power","Wave"], answer:"Force"},
+
+{q:"SI unit of mass?", options:["Kg","Gram","Newton","Ton"], answer:"Kg"},
+{q:"SI unit of time?", options:["Second","Minute","Hour","Day"], answer:"Second"},
+{q:"SI unit of temperature?", options:["Kelvin","Celsius","Fahrenheit","Joule"], answer:"Kelvin"},
+{q:"SI unit of current?", options:["Ampere","Volt","Watt","Ohm"], answer:"Ampere"},
+{q:"SI unit of length?", options:["Meter","Km","Cm","Mm"], answer:"Meter"},
+
+{q:"Force = mass × ?", options:["Acceleration","Velocity","Speed","Time"], answer:"Acceleration"},
+{q:"Velocity means?", options:["Speed with direction","Speed","Distance","None"], answer:"Speed with direction"},
+{q:"Acceleration is change in?", options:["Velocity","Speed","Distance","Mass"], answer:"Velocity"},
+{q:"Distance is?", options:["Scalar","Vector","Both","None"], answer:"Scalar"},
+{q:"Displacement is?", options:["Vector","Scalar","None","Both"], answer:"Vector"},
+
+{q:"Work formula?", options:["Force × Distance","Mass × Acceleration","Power × Time","None"], answer:"Force × Distance"},
+{q:"Power formula?", options:["Work/Time","Force × Distance","Mass × Speed","None"], answer:"Work/Time"},
+{q:"Energy is?", options:["Capacity to do work","Force","Power","Speed"], answer:"Capacity to do work"},
+{q:"Kinetic energy depends on?", options:["Mass & Velocity","Time","Distance","None"], answer:"Mass & Velocity"},
+{q:"Potential energy depends on?", options:["Height","Speed","Time","None"], answer:"Height"},
+
+{q:"Unit of frequency?", options:["Hertz","Watt","Volt","Newton"], answer:"Hertz"},
+{q:"Frequency means?", options:["Number of waves","Speed","Time","None"], answer:"Number of waves"},
+{q:"Sound travels in?", options:["Medium","Vacuum","None","Space"], answer:"Medium"},
+{q:"Light travels in?", options:["Vacuum","Only air","Only water","None"], answer:"Vacuum"},
+{q:"Reflection is?", options:["Bouncing back","Absorbing","Breaking","None"], answer:"Bouncing back"},
+
+{q:"Refraction is?", options:["Bending of light","Reflection","Absorption","None"], answer:"Bending of light"},
+{q:"Mirror forms?", options:["Image","Sound","Energy","None"], answer:"Image"},
+{q:"Convex mirror gives?", options:["Virtual image","Real image","None","Both"], answer:"Virtual image"},
+{q:"Concave mirror gives?", options:["Real image","Only virtual","None","Both"], answer:"Real image"},
+{q:"Lens is used for?", options:["Focusing light","Sound","Energy","None"], answer:"Focusing light"},
+
+{q:"Unit of voltage?", options:["Volt","Ampere","Watt","Ohm"], answer:"Volt"},
+{q:"Unit of resistance?", options:["Ohm","Volt","Ampere","Watt"], answer:"Ohm"},
+{q:"Ohm law is?", options:["V=IR","I=VR","R=VI","None"], answer:"V=IR"},
+{q:"Current is flow of?", options:["Electrons","Protons","Neutrons","None"], answer:"Electrons"},
+{q:"Battery provides?", options:["Energy","Force","Mass","None"], answer:"Energy"},
+
+{q:"Magnet attracts?", options:["Iron","Wood","Plastic","Glass"], answer:"Iron"},
+{q:"Magnetic poles?", options:["North & South","East & West","Up & Down","None"], answer:"North & South"},
+{q:"Like poles?", options:["Repel","Attract","None","Both"], answer:"Repel"},
+{q:"Unlike poles?", options:["Attract","Repel","None","Both"], answer:"Attract"},
+{q:"Earth is a?", options:["Magnet","Battery","Conductor","None"], answer:"Magnet"},
+
+{q:"Heat is form of?", options:["Energy","Force","Mass","None"], answer:"Energy"},
+{q:"Temperature measures?", options:["Hotness","Mass","Speed","None"], answer:"Hotness"},
+{q:"Expansion occurs due to?", options:["Heat","Cold","Pressure","None"], answer:"Heat"},
+{q:"Boiling point of water?", options:["100°C","0°C","50°C","200°C"], answer:"100°C"},
+{q:"Freezing point of water?", options:["0°C","100°C","-10°C","10°C"], answer:"0°C"}
+],
+medium: [
+{q:"Velocity formula?", options:["d/t","t/d","d*t","None"], answer:"d/t"},
+{q:"Acceleration?", options:["v/t","t/v","d/t","None"], answer:"v/t"},
+{q:"Work formula?", options:["F*d","F/t","d/t","None"], answer:"F*d"},
+{q:"Momentum?", options:["mv","m/v","v/m","None"], answer:"mv"},
+{q:"Density?", options:["m/v","v/m","m*t","None"], answer:"m/v"},
+{q:"Velocity formula?", options:["Distance/Time","Time/Distance","Distance×Time","None"], answer:"Distance/Time"},
+{q:"Acceleration formula?", options:["Change in velocity/Time","Distance/Time","Speed×Time","None"], answer:"Change in velocity/Time"},
+{q:"Momentum formula?", options:["Mass × Velocity","Force × Time","Work/Time","None"], answer:"Mass × Velocity"},
+{q:"Force formula?", options:["Mass × Acceleration","Mass × Velocity","Work/Time","None"], answer:"Mass × Acceleration"},
+{q:"Work done when force is zero?", options:["Zero","Maximum","Minimum","None"], answer:"Zero"},
+
+{q:"Power formula?", options:["Work/Time","Force × Distance","Mass × Velocity","None"], answer:"Work/Time"},
+{q:"Kinetic energy formula?", options:["1/2mv²","mv","mgh","None"], answer:"1/2mv²"},
+{q:"Potential energy formula?", options:["mgh","mv","1/2mv²","None"], answer:"mgh"},
+{q:"Unit of momentum?", options:["kg m/s","Newton","Joule","Watt"], answer:"kg m/s"},
+{q:"Unit of work?", options:["Joule","Watt","Newton","Volt"], answer:"Joule"},
+
+{q:"1 km = ?", options:["1000 m","100 m","10 m","10000 m"], answer:"1000 m"},
+{q:"1 hour = ?", options:["3600 s","60 s","600 s","1000 s"], answer:"3600 s"},
+{q:"Speed = 20 m/s, time = 5 s, distance = ?", options:["100 m","50 m","20 m","10 m"], answer:"100 m"},
+{q:"Mass = 2 kg, acceleration = 3 m/s², force = ?", options:["6 N","5 N","3 N","2 N"], answer:"6 N"},
+{q:"Work = 50 J, time = 5 s, power = ?", options:["10 W","5 W","15 W","20 W"], answer:"10 W"},
+
+{q:"Momentum increases with?", options:["Velocity","Time","Distance","None"], answer:"Velocity"},
+{q:"Kinetic energy increases with?", options:["Velocity²","Velocity","Mass","None"], answer:"Velocity²"},
+{q:"Gravitational force depends on?", options:["Mass","Speed","Time","None"], answer:"Mass"},
+{q:"Value of g on Earth?", options:["9.8 m/s²","10 m/s²","8 m/s²","12 m/s²"], answer:"9.8 m/s²"},
+{q:"Free fall means?", options:["Only gravity acts","No gravity","Constant speed","None"], answer:"Only gravity acts"},
+
+{q:"Friction opposes?", options:["Motion","Force","Energy","None"], answer:"Motion"},
+{q:"Friction can be reduced by?", options:["Lubrication","Heating","Cooling","None"], answer:"Lubrication"},
+{q:"Inertia depends on?", options:["Mass","Velocity","Speed","None"], answer:"Mass"},
+{q:"Newton’s 1st law is law of?", options:["Inertia","Acceleration","Action","None"], answer:"Inertia"},
+{q:"Newton’s 3rd law states?", options:["Action = Reaction","F=ma","Energy conserved","None"], answer:"Action = Reaction"},
+
+{q:"Pressure formula?", options:["Force/Area","Area/Force","Mass/Area","None"], answer:"Force/Area"},
+{q:"Unit of pressure?", options:["Pascal","Joule","Watt","Newton"], answer:"Pascal"},
+{q:"Density formula?", options:["Mass/Volume","Volume/Mass","Mass×Volume","None"], answer:"Mass/Volume"},
+{q:"Unit of density?", options:["kg/m³","g/m","kg/m","None"], answer:"kg/m³"},
+{q:"Liquid pressure increases with?", options:["Depth","Area","Mass","None"], answer:"Depth"},
+
+{q:"Wave speed formula?", options:["Frequency × Wavelength","Time/Distance","Distance×Time","None"], answer:"Frequency × Wavelength"},
+{q:"Frequency unit?", options:["Hertz","Watt","Volt","Amp"], answer:"Hertz"},
+{q:"Wavelength unit?", options:["Meter","Second","Hertz","None"], answer:"Meter"},
+{q:"Sound speed in air?", options:["~340 m/s","~3000 m/s","~150 m/s","None"], answer:"~340 m/s"},
+{q:"Echo is due to?", options:["Reflection","Refraction","Absorption","None"], answer:"Reflection"},
+
+{q:"Refraction occurs due to?", options:["Change in speed","Change in color","Change in time","None"], answer:"Change in speed"},
+{q:"Convex lens forms?", options:["Real image","Only virtual","None","Both"], answer:"Real image"},
+{q:"Concave lens forms?", options:["Virtual image","Real image","None","Both"], answer:"Virtual image"},
+{q:"Mirror formula relates?", options:["f, v, u","Speed, time","Mass, force","None"], answer:"f, v, u"},
+{q:"Power of lens unit?", options:["Diopter","Watt","Volt","Ohm"], answer:"Diopter"},
+
+{q:"Ohm’s law formula?", options:["V=IR","I=VR","R=VI","None"], answer:"V=IR"},
+{q:"Resistance increases with?", options:["Length","Area","Voltage","None"], answer:"Length"},
+{q:"Resistance decreases with?", options:["Area","Length","Voltage","None"], answer:"Area"},
+{q:"Series circuit current is?", options:["Same","Different","Zero","None"], answer:"Same"},
+{q:"Parallel circuit voltage is?", options:["Same","Different","Zero","None"], answer:"Same"}
+],
+hard: [
+{q:"Ohm law?", options:["V=IR","I=VR","R=VI","None"], answer:"V=IR"},
+{q:"KE formula?", options:["1/2mv²","mv","m/v","None"], answer:"1/2mv²"},
+{q:"PE?", options:["mgh","mv","m/v","None"], answer:"mgh"},
+{q:"Frequency?", options:["1/T","T","fT","None"], answer:"1/T"},
+{q:"Wave speed?", options:["fλ","f/λ","λ/f","None"], answer:"fλ"},
+{q:"Which quantity remains constant in uniform circular motion?", options:["Speed","Velocity","Acceleration","Force"], answer:"Speed"},
+{q:"Centripetal force acts in which direction?", options:["Towards center","Away from center","Upward","Downward"], answer:"Towards center"},
+{q:"Escape velocity depends on?", options:["Mass of planet","Mass of object","Time","Velocity"], answer:"Mass of planet"},
+{q:"Work done in circular motion?", options:["Zero","Maximum","Minimum","Infinite"], answer:"Zero"},
+{q:"Impulse is change in?", options:["Momentum","Velocity","Force","Energy"], answer:"Momentum"},
+
+{q:"Which law explains recoil of a gun?", options:["Newton’s 3rd law","Newton’s 1st law","Newton’s 2nd law","None"], answer:"Newton’s 3rd law"},
+{q:"Angular momentum is conserved when?", options:["No external torque","Force is zero","Velocity constant","None"], answer:"No external torque"},
+{q:"Moment of inertia depends on?", options:["Mass distribution","Velocity","Time","Force"], answer:"Mass distribution"},
+{q:"Torque formula?", options:["Force × distance","Mass × acceleration","Work/Time","None"], answer:"Force × distance"},
+{q:"SI unit of torque?", options:["Nm","Joule","Watt","Newton"], answer:"Nm"},
+
+{q:"Which has maximum kinetic energy?", options:["Highest velocity","Lowest velocity","Zero velocity","Same velocity"], answer:"Highest velocity"},
+{q:"Potential energy is maximum at?", options:["Maximum height","Ground","Mid point","None"], answer:"Maximum height"},
+{q:"Mechanical energy is conserved when?", options:["No friction","Friction present","Force applied","None"], answer:"No friction"},
+{q:"Power is maximum when?", options:["Work high, time low","Work low, time high","Time high","None"], answer:"Work high, time low"},
+{q:"Efficiency is?", options:["Output/Input","Input/Output","Work/Time","None"], answer:"Output/Input"},
+
+{q:"Pressure is maximum when?", options:["Area small","Area large","Force small","None"], answer:"Area small"},
+{q:"Buoyant force depends on?", options:["Density","Velocity","Time","None"], answer:"Density"},
+{q:"Object floats when?", options:["Density less than liquid","Density more","Equal","None"], answer:"Density less than liquid"},
+{q:"Pascal law applies to?", options:["Fluids","Solids","Gases only","None"], answer:"Fluids"},
+{q:"Hydraulic lift works on?", options:["Pascal law","Ohm law","Newton law","None"], answer:"Pascal law"},
+
+{q:"Wave is transfer of?", options:["Energy","Matter","Mass","None"], answer:"Energy"},
+{q:"Frequency inversely proportional to?", options:["Time period","Speed","Distance","None"], answer:"Time period"},
+{q:"Sound cannot travel in?", options:["Vacuum","Air","Water","Solid"], answer:"Vacuum"},
+{q:"Pitch depends on?", options:["Frequency","Amplitude","Speed","None"], answer:"Frequency"},
+{q:"Loudness depends on?", options:["Amplitude","Frequency","Speed","None"], answer:"Amplitude"},
+
+{q:"Refraction occurs due to change in?", options:["Speed","Frequency","Wavelength","None"], answer:"Speed"},
+{q:"Refractive index depends on?", options:["Speed of light","Time","Distance","None"], answer:"Speed of light"},
+{q:"Critical angle occurs when?", options:["Refraction = 90°","Reflection = 90°","Angle 0°","None"], answer:"Refraction = 90°"},
+{q:"Total internal reflection requires?", options:["Denser to rarer","Rarer to denser","Equal medium","None"], answer:"Denser to rarer"},
+{q:"Convex lens converges?", options:["Light rays","Sound","Energy","None"], answer:"Light rays"},
+
+{q:"Mirror formula is?", options:["1/f = 1/v + 1/u","v=u+t","F=ma","None"], answer:"1/f = 1/v + 1/u"},
+{q:"Magnification formula?", options:["v/u","u/v","f/u","None"], answer:"v/u"},
+{q:"Unit of focal length?", options:["Meter","Second","Watt","None"], answer:"Meter"},
+{q:"Power of lens increases when?", options:["Focal length decreases","Focal length increases","Same","None"], answer:"Focal length decreases"},
+{q:"Unit of power of lens?", options:["Diopter","Watt","Volt","None"], answer:"Diopter"},
+
+{q:"Current is rate of flow of?", options:["Charge","Energy","Force","None"], answer:"Charge"},
+{q:"Charge unit?", options:["Coulomb","Volt","Ampere","Ohm"], answer:"Coulomb"},
+{q:"Resistance opposes?", options:["Current","Voltage","Power","None"], answer:"Current"},
+{q:"Ohm law valid for?", options:["Constant temp","High temp","Low temp","None"], answer:"Constant temp"},
+{q:"Electrical power formula?", options:["VI","IR","V/R","None"], answer:"VI"},
+
+{q:"Magnetic field around wire is?", options:["Circular","Straight","None","Random"], answer:"Circular"},
+{q:"Electromagnet uses?", options:["Current","Voltage","Force","None"], answer:"Current"},
+{q:"Transformer works on?", options:["Electromagnetic induction","Ohm law","Newton law","None"], answer:"Electromagnetic induction"},
+{q:"AC current changes?", options:["Direction","Magnitude","Both","None"], answer:"Both"},
+{q:"DC current is?", options:["Constant","Variable","Zero","None"], answer:"Constant"}
+]
+},
+
+english: {
+easy: [
+{q:"Opposite of good?", options:["Bad","Nice","Happy","Cool"], answer:"Bad"},
+{q:"Plural of cat?", options:["Cats","Cat","Cates","None"], answer:"Cats"},
+{q:"Verb in 'I run'?", options:["Run","I","None","All"], answer:"Run"},
+{q:"Synonym of big?", options:["Large","Small","Tiny","None"], answer:"Large"},
+{q:"Past of go?", options:["Went","Go","Gone","None"], answer:"Went"},
+{q:"Opposite of 'good'?", options:["Bad","Nice","Happy","Cool"], answer:"Bad"},
+{q:"Opposite of 'big'?", options:["Small","Large","Huge","Tall"], answer:"Small"},
+{q:"Plural of 'cat'?", options:["Cats","Cat","Cates","None"], answer:"Cats"},
+{q:"Plural of 'child'?", options:["Children","Childs","Childes","None"], answer:"Children"},
+{q:"Past tense of 'go'?", options:["Went","Go","Gone","Going"], answer:"Went"},
+
+{q:"Past tense of 'eat'?", options:["Ate","Eat","Eaten","Eating"], answer:"Ate"},
+{q:"Verb in 'She runs fast'?", options:["Runs","She","Fast","None"], answer:"Runs"},
+{q:"Noun in 'The dog barks'?", options:["Dog","Barks","The","None"], answer:"Dog"},
+{q:"Adjective in 'A red apple'?", options:["Red","Apple","A","None"], answer:"Red"},
+{q:"Adverb in 'He runs quickly'?", options:["Quickly","Runs","He","None"], answer:"Quickly"},
+
+{q:"Synonym of 'happy'?", options:["Joyful","Sad","Angry","Tired"], answer:"Joyful"},
+{q:"Synonym of 'fast'?", options:["Quick","Slow","Lazy","Weak"], answer:"Quick"},
+{q:"Opposite of 'hot'?", options:["Cold","Warm","Cool","Heat"], answer:"Cold"},
+{q:"Opposite of 'up'?", options:["Down","Above","Top","High"], answer:"Down"},
+{q:"Fill: She ___ a book.", options:["Reads","Read","Reading","None"], answer:"Reads"},
+
+{q:"Fill: They ___ playing.", options:["Are","Is","Was","Be"], answer:"Are"},
+{q:"Fill: I ___ a student.", options:["Am","Is","Are","Be"], answer:"Am"},
+{q:"Fill: He ___ my friend.", options:["Is","Are","Am","Be"], answer:"Is"},
+{q:"Fill: We ___ happy.", options:["Are","Is","Am","Be"], answer:"Are"},
+{q:"Article in 'an apple'?", options:["An","Apple","A","None"], answer:"An"},
+
+{q:"Article in 'a book'?", options:["A","Book","An","None"], answer:"A"},
+{q:"Which is a pronoun?", options:["He","Run","Big","Quick"], answer:"He"},
+{q:"Which is a verb?", options:["Eat","Apple","Red","Quick"], answer:"Eat"},
+{q:"Which is a noun?", options:["Table","Run","Quickly","Blue"], answer:"Table"},
+{q:"Which is an adjective?", options:["Beautiful","Run","Quickly","Eat"], answer:"Beautiful"},
+
+{q:"Which is an adverb?", options:["Slowly","Slow","Run","Table"], answer:"Slowly"},
+{q:"Fill: She ___ to school.", options:["Goes","Go","Going","Gone"], answer:"Goes"},
+{q:"Fill: They ___ football.", options:["Play","Plays","Playing","Played"], answer:"Play"},
+{q:"Fill: He ___ eating.", options:["Is","Are","Am","Be"], answer:"Is"},
+{q:"Fill: I ___ done my work.", options:["Have","Has","Had","Do"], answer:"Have"},
+
+{q:"Opposite of 'day'?", options:["Night","Evening","Morning","Sun"], answer:"Night"},
+{q:"Opposite of 'open'?", options:["Close","Shut","Lock","None"], answer:"Close"},
+{q:"Synonym of 'small'?", options:["Tiny","Big","Huge","Tall"], answer:"Tiny"},
+{q:"Synonym of 'smart'?", options:["Clever","Dull","Lazy","Weak"], answer:"Clever"},
+{q:"Fill: This is ___ pen.", options:["My","Me","Mine","I"], answer:"My"},
+
+{q:"Fill: That is ___ book.", options:["Your","You","Yours","Me"], answer:"Your"},
+{q:"Fill: These are ___ apples.", options:["Their","They","Them","None"], answer:"Their"},
+{q:"Which is correct?", options:["She is happy","She are happy","She am happy","None"], answer:"She is happy"},
+{q:"Which is correct?", options:["They are playing","They is playing","They am playing","None"], answer:"They are playing"},
+{q:"Which is correct?", options:["I am fine","I is fine","I are fine","None"], answer:"I am fine"},
+
+{q:"Fill: He ___ a car.", options:["Has","Have","Had","None"], answer:"Has"},
+{q:"Fill: We ___ a game.", options:["Have","Has","Had","None"], answer:"Have"},
+{q:"Fill: She ___ singing.", options:["Is","Are","Am","None"], answer:"Is"},
+{q:"Fill: I ___ reading.", options:["Am","Is","Are","None"], answer:"Am"},
+{q:"Fill: They ___ coming.", options:["Are","Is","Am","None"], answer:"Are"}
+],
+medium: [
+{q:"Noun?", options:["Name","Action","Describe","None"], answer:"Name"},
+{q:"Adjective?", options:["Describe","Name","Action","None"], answer:"Describe"},
+{q:"Adverb?", options:["Modify","Name","Action","None"], answer:"Modify"},
+{q:"Pronoun?", options:["Replace noun","Action","Describe","None"], answer:"Replace noun"},
+{q:"Preposition?", options:["Relation","Action","Name","None"], answer:"Relation"},
+{q:"Choose correct: She ___ to school every day.", options:["Goes","Go","Going","Gone"], answer:"Goes"},
+{q:"Choose correct: They ___ playing cricket.", options:["Are","Is","Am","Be"], answer:"Are"},
+{q:"Choose correct: I ___ finished my work.", options:["Have","Has","Had","Do"], answer:"Have"},
+{q:"Choose correct: He ___ watching TV.", options:["Is","Are","Am","Be"], answer:"Is"},
+{q:"Choose correct: We ___ a new car.", options:["Have","Has","Had","None"], answer:"Have"},
+
+{q:"Past tense of 'write'?", options:["Wrote","Write","Written","Writing"], answer:"Wrote"},
+{q:"Past tense of 'see'?", options:["Saw","See","Seen","Seeing"], answer:"Saw"},
+{q:"Past tense of 'take'?", options:["Took","Take","Taken","Taking"], answer:"Took"},
+{q:"Past tense of 'come'?", options:["Came","Come","Coming","Comed"], answer:"Came"},
+{q:"Past tense of 'give'?", options:["Gave","Give","Given","Giving"], answer:"Gave"},
+
+{q:"Choose correct: She ___ already eaten.", options:["Has","Have","Had","Is"], answer:"Has"},
+{q:"Choose correct: I ___ to the market yesterday.", options:["Went","Go","Gone","Going"], answer:"Went"},
+{q:"Choose correct: They ___ finished their homework.", options:["Have","Has","Had","None"], answer:"Have"},
+{q:"Choose correct: He ___ a letter now.", options:["Is writing","Writes","Write","Wrote"], answer:"Is writing"},
+{q:"Choose correct: We ___ watching a movie.", options:["Are","Is","Am","Be"], answer:"Are"},
+
+{q:"Identify the adjective: 'She has a beautiful dress.'", options:["Beautiful","Dress","She","Has"], answer:"Beautiful"},
+{q:"Identify the adverb: 'He runs quickly.'", options:["Quickly","Runs","He","None"], answer:"Quickly"},
+{q:"Identify the noun: 'The sun rises.'", options:["Sun","Rises","The","None"], answer:"Sun"},
+{q:"Identify the verb: 'Birds fly high.'", options:["Fly","Birds","High","None"], answer:"Fly"},
+{q:"Identify the pronoun: 'She is happy.'", options:["She","Happy","Is","None"], answer:"She"},
+
+{q:"Choose correct: This book is ___ than that.", options:["Better","Good","Best","More good"], answer:"Better"},
+{q:"Choose correct: He is the ___ student.", options:["Best","Better","Good","More good"], answer:"Best"},
+{q:"Choose correct: She is ___ than me.", options:["Taller","Tall","Tallest","More tall"], answer:"Taller"},
+{q:"Choose correct: This is the ___ place.", options:["Most beautiful","More beautiful","Beautiful","None"], answer:"Most beautiful"},
+{q:"Choose correct: He is ___ than his brother.", options:["Stronger","Strong","Strongest","More strong"], answer:"Stronger"},
+
+{q:"Choose correct preposition: He is fond ___ music.", options:["Of","In","At","On"], answer:"Of"},
+{q:"Choose correct: She is good ___ English.", options:["At","In","On","Of"], answer:"At"},
+{q:"Choose correct: He is afraid ___ dogs.", options:["Of","In","On","At"], answer:"Of"},
+{q:"Choose correct: They are interested ___ sports.", options:["In","On","At","Of"], answer:"In"},
+{q:"Choose correct: She is married ___ him.", options:["To","With","At","On"], answer:"To"},
+
+{q:"Choose correct sentence:", options:["She doesn't like tea","She don't like tea","She not like tea","None"], answer:"She doesn't like tea"},
+{q:"Choose correct sentence:", options:["He has done his work","He have done his work","He done his work","None"], answer:"He has done his work"},
+{q:"Choose correct sentence:", options:["They were playing","They was playing","They is playing","None"], answer:"They were playing"},
+{q:"Choose correct sentence:", options:["I have seen him","I has seen him","I seen him","None"], answer:"I have seen him"},
+{q:"Choose correct sentence:", options:["She is going home","She going home","She go home","None"], answer:"She is going home"},
+
+{q:"Choose correct article: ___ apple a day keeps doctor away.", options:["An","A","The","None"], answer:"An"},
+{q:"Choose correct: ___ sun rises in east.", options:["The","A","An","None"], answer:"The"},
+{q:"Choose correct: I saw ___ elephant.", options:["An","A","The","None"], answer:"An"},
+{q:"Choose correct: She bought ___ book.", options:["A","An","The","None"], answer:"A"},
+{q:"Choose correct: ___ Ganga is a river.", options:["The","A","An","None"], answer:"The"},
+
+{q:"Choose correct: If I ___ you, I would help.", options:["Were","Was","Am","Be"], answer:"Were"},
+{q:"Choose correct: She said that she ___ busy.", options:["Was","Is","Are","Be"], answer:"Was"},
+{q:"Choose correct: He told me that he ___ coming.", options:["Was","Is","Are","Be"], answer:"Was"},
+{q:"Choose correct: I wish I ___ rich.", options:["Were","Was","Am","Be"], answer:"Were"},
+{q:"Choose correct: If he ___ hard, he will pass.", options:["Studies","Study","Studied","Studying"], answer:"Studies"}
+],
+hard: [
+{q:"Tense?", options:["Time","Place","Action","None"], answer:"Time"},
+{q:"Clause?", options:["Group words","Word","Sentence","None"], answer:"Group words"},
+{q:"Phrase?", options:["No subject","Sentence","Word","None"], answer:"No subject"},
+{q:"Voice?", options:["Active/Passive","Time","Place","None"], answer:"Active/Passive"},
+{q:"Article?", options:["a/an/the","is","was","None"], answer:"a/an/the"},
+{q:"Choose correct: He insisted ___ going.", options:["on","in","at","to"], answer:"on"},
+{q:"Antonym of 'Ephemeral'?", options:["Temporary","Lasting","Short","Brief"], answer:"Lasting"},
+{q:"Synonym of 'Obsolete'?", options:["Modern","Outdated","New","Useful"], answer:"Outdated"},
+{q:"Identify error: She don’t like coffee.", options:["She","don’t","like","coffee"], answer:"don’t"},
+{q:"Choose correct: No sooner had he arrived ___ it rained.", options:["when","than","then","but"], answer:"than"},
+
+{q:"Meaning of 'Ubiquitous'?", options:["Rare","Everywhere","Hidden","Unknown"], answer:"Everywhere"},
+{q:"Choose correct passive voice: They completed the work.", options:["Work is completed","Work was completed","Work completed","Work has completed"], answer:"Work was completed"},
+{q:"Identify figure of speech: Time flies.", options:["Simile","Metaphor","Alliteration","Hyperbole"], answer:"Metaphor"},
+{q:"Synonym of 'Candid'?", options:["Honest","Secret","Hidden","False"], answer:"Honest"},
+{q:"Choose correct: He is good ___ mathematics.", options:["at","in","on","for"], answer:"at"},
+
+{q:"Meaning of 'Apathy'?", options:["Interest","Lack of interest","Happiness","Anger"], answer:"Lack of interest"},
+{q:"Antonym of 'Benevolent'?", options:["Kind","Cruel","Helpful","Generous"], answer:"Cruel"},
+{q:"Choose correct: She has been working here ___ 5 years.", options:["since","for","from","by"], answer:"for"},
+{q:"Identify tense: She had finished work.", options:["Present","Past Perfect","Future","Past Continuous"], answer:"Past Perfect"},
+{q:"Choose correct: I prefer tea ___ coffee.", options:["than","over","to","from"], answer:"to"},
+
+{q:"Meaning of 'Meticulous'?", options:["Careless","Detailed","Lazy","Fast"], answer:"Detailed"},
+{q:"Synonym of 'Ambiguous'?", options:["Clear","Unclear","Direct","Exact"], answer:"Unclear"},
+{q:"Choose correct: Hardly had I reached ___ it started raining.", options:["when","than","then","but"], answer:"when"},
+{q:"Identify error: Each of the boys have done their work.", options:["Each","boys","have","their"], answer:"have"},
+{q:"Choose correct article: ___ honest man.", options:["a","an","the","no article"], answer:"an"},
+
+{q:"Meaning of 'Pragmatic'?", options:["Practical","Emotional","Dreamy","Weak"], answer:"Practical"},
+{q:"Antonym of 'Scarce'?", options:["Rare","Abundant","Few","Limited"], answer:"Abundant"},
+{q:"Choose correct: He is married ___ a doctor.", options:["with","to","by","from"], answer:"to"},
+{q:"Identify voice: The letter was written by her.", options:["Active","Passive","Middle","None"], answer:"Passive"},
+{q:"Choose correct: She is senior ___ me.", options:["than","to","from","with"], answer:"to"},
+
+{q:"Meaning of 'Tenacious'?", options:["Weak","Persistent","Lazy","Soft"], answer:"Persistent"},
+{q:"Synonym of 'Exacerbate'?", options:["Improve","Worsen","Reduce","Calm"], answer:"Worsen"},
+{q:"Choose correct: He prevented me ___ going.", options:["from","to","in","on"], answer:"from"},
+{q:"Identify error: Neither of them are ready.", options:["Neither","them","are","ready"], answer:"are"},
+{q:"Choose correct: She is fond ___ music.", options:["of","in","on","at"], answer:"of"},
+
+{q:"Meaning of 'Alleviate'?", options:["Increase","Reduce","Ignore","Hide"], answer:"Reduce"},
+{q:"Antonym of 'Verbose'?", options:["Wordy","Concise","Long","Detailed"], answer:"Concise"},
+{q:"Choose correct: He is capable ___ doing it.", options:["of","to","in","for"], answer:"of"},
+{q:"Identify tense: I will have completed the work.", options:["Future Perfect","Present","Past","Continuous"], answer:"Future Perfect"},
+{q:"Choose correct: She insisted ___ paying.", options:["on","to","for","in"], answer:"on"},
+
+{q:"Meaning of 'Resilient'?", options:["Weak","Flexible","Strong","Fragile"], answer:"Strong"},
+{q:"Synonym of 'Lucid'?", options:["Clear","Confusing","Dark","Hidden"], answer:"Clear"},
+{q:"Choose correct: He abstained ___ alcohol.", options:["from","to","in","on"], answer:"from"},
+{q:"Identify error: One of my friend is here.", options:["One","friend","is","here"], answer:"friend"},
+{q:"Choose correct: She is married ___ him.", options:["with","to","by","from"], answer:"to"},
+
+{q:"Meaning of 'Impeccable'?", options:["Perfect","Wrong","Bad","Dirty"], answer:"Perfect"},
+{q:"Antonym of 'Optimistic'?", options:["Hopeful","Positive","Pessimistic","Bright"], answer:"Pessimistic"},
+{q:"Choose correct: He is afraid ___ dogs.", options:["of","to","from","on"], answer:"of"},
+{q:"Identify figure of speech: The stars danced.", options:["Personification","Simile","Metaphor","Alliteration"], answer:"Personification"},
+{q:"Choose correct: She is known ___ her kindness.", options:["for","by","to","with"], answer:"for"}
+]
+}
+
+};
+
+// SELECT QUESTIONS
+const questions = questionBank[subject][difficulty];
+
+// LOAD QUESTIONS
+const form = document.getElementById("quizForm");
+
+questions.forEach((q,index)=>{
+let div=document.createElement("div");
+div.classList.add("question");
+
+div.innerHTML=`
+<p><b>${index+1}. ${q.q}</b></p>
+${q.options.map(opt=>`
+<label>
+<input type="radio" name="q${index}" value="${opt}">
+${opt}
+</label><br>`).join("")}
+`;
+
+form.appendChild(div);
+});
+
+// TIMER (10 mins default)
+// SET TIME BASED ON DIFFICULTY
+let totalSeconds;
+
+if(difficulty === "easy"){
+    totalSeconds = 30 * 60; // 30 minutes
+}
+else if(difficulty === "medium"){
+    totalSeconds = 60 * 60; // 1 hour
+}
+else if(difficulty === "hard"){
+    totalSeconds = 90 * 60; // 1 hour 30 minutes
+}
+
+// TIMER
+let timer = setInterval(()=>{
+let m = Math.floor(totalSeconds / 60);
+let s = totalSeconds % 60;
+
+if(s < 10) s = "0" + s;
+
+document.getElementById("timer").innerText = m + ":" + s;
+
+totalSeconds--;
+
+if(totalSeconds < 0){
+clearInterval(timer);
+submitTest();
+}
+},1000);
+
+// SUBMIT
+function submitTest(){
+
+
+// 🚫 Stop multiple submissions
+if(submitted){
+alert("Test already submitted!");
+return;
+}
+
+submitted = true;
+
+clearInterval(timer);
+
+let score=0;
+let result="";
+
+questions.forEach((q,i)=>{
+
+let selected=document.querySelector(`input[name="q${i}"]:checked`);
+
+// Disable all options after submit
+let options = document.querySelectorAll(`input[name="q${i}"]`);
+options.forEach(opt => opt.disabled = true);
+
+if(selected){
+if(selected.value===q.answer){
+score++;
+result+=`<p>Q${i+1}: ✅ Correct</p>`;
+}else{
+result+=`<p>Q${i+1}: ❌ Wrong (Ans: ${q.answer})</p>`;
+}
+}else{
+result+=`<p>Q${i+1}: ❌ Not Attempted (Ans: ${q.answer})</p>`;
+}
+
+});
+
+// Disable submit button
+document.querySelector("button").disabled = true;
+// ✅ SAVE RESULT
+try{
+db.collection("results").add({
+  username: localStorage.getItem("loggedInUser"), // ✅ ADD THIS LINE
+  type: "mcq",
+  subject: subject,
+  difficulty: difficulty,
+  score: score,
+  total: questions.length,
+  accuracy: ((score / questions.length) * 100).toFixed(2),
+  time: new Date()
+})
+.then(() => {
+  console.log("✅ Data saved successfully");
+})
+.catch((error) => {
+  console.error("❌ Firestore error:", error);
+});
+}catch(e){
+console.log("Firebase error:", e);
+}
+
+
+
+let box=document.getElementById("resultBox");
+box.style.display="block";
+box.innerHTML=`<h3>Score: ${score}/${questions.length}</h3>${result}`;
+
+}
+
+</script>
+
+</body>
+</html>

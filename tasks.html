@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Mentor | Tasks & Assignments</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:"Poppins","Segoe UI",sans-serif;
+}
+
+body{
+min-height:100vh;
+padding:20px;
+background:
+linear-gradient(rgba(255,255,255,0.6), rgba(255,255,255,0.6)),
+url("https://t4.ftcdn.net/jpg/04/97/86/15/360_F_497861573_EX9cjKXjVLBhbHrawjVK8M3BthLDS5lE.jpg");
+background-size:cover;
+background-position:center;
+}
+
+.dashboard{
+width:100%;
+min-height:calc(100vh - 40px);
+background:rgba(255,255,255,0.40);
+backdrop-filter:blur(16px);
+border-radius:28px;
+box-shadow:0 35px 70px rgba(0,0,0,0.28);
+padding:30px;
+display:flex;
+flex-direction:column;
+}
+
+.header{
+margin-bottom:30px;
+}
+
+.header h2{
+font-size:24px;
+color:#333;
+font-weight:600;
+}
+
+.grid{
+flex:1;
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+gap:26px;
+}
+
+.card{
+background:rgba(255,255,255,0.70);
+backdrop-filter:blur(12px);
+border-radius:24px;
+padding:30px;
+box-shadow:0 20px 40px rgba(0,0,0,0.18);
+transition:all 0.3s ease;
+display:flex;
+flex-direction:column;
+}
+
+.card:hover{
+transform:translateY(-8px);
+box-shadow:0 30px 55px rgba(0,0,0,0.25);
+}
+
+.card-icon{
+font-size:30px;
+margin-bottom:12px;
+}
+
+.card-title{
+font-size:16px;
+font-weight:600;
+color:#333;
+margin-bottom:8px;
+}
+
+.card-desc{
+font-size:14px;
+color:#555;
+line-height:1.5;
+margin-bottom:18px;
+}
+
+.field{
+margin-bottom:14px;
+}
+
+.field input,
+.field select{
+width:100%;
+padding:10px;
+border:none;
+border-bottom:2px solid #aaa;
+background:transparent;
+font-size:14px;
+}
+
+button{
+padding:11px;
+border:none;
+border-radius:20px;
+background:linear-gradient(135deg,#6c63ff,#b388ff);
+color:white;
+font-size:14px;
+font-weight:600;
+cursor:pointer;
+margin-top:8px;
+}
+
+button:hover{
+opacity:0.9;
+}
+
+.ai-card{
+grid-column:span 2;
+background:linear-gradient(135deg,#6c63ff,#b388ff);
+color:white;
+}
+
+.ai-card .card-title,
+.ai-card .card-desc{
+color:white;
+}
+
+@media(max-width:768px){
+.ai-card{
+grid-column:span 1;
+}
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="dashboard">
+
+<div class="header">
+<h2>Tasks & Assignments</h2>
+</div>
+
+<div class="grid">
+
+<!-- MCQS -->
+<div class="card">
+<div class="card-icon">❓</div>
+<div class="card-title">MCQs</div>
+<div class="card-desc">
+Practice multiple choice questions to strengthen concepts and prepare for exams.
+</div>
+
+<div class="field">
+<select id="subject">
+<option value="">Select Subject</option>
+<option value="math">Mathematics</option>
+<option value="cs">Computer Science</option>
+<option value="physics">Physics</option>
+<option value="english">English</option>
+</select>
+</div>
+
+<div class="field">
+<select id="difficulty">
+<option value="">Difficulty Level</option>
+<option value="easy">Easy</option>
+<option value="medium">Medium</option>
+<option value="hard">Hard</option>
+</select>
+</div>
+
+<button onclick="openMCQ()">Start MCQ Practice</button>
+</div>
+
+<!-- SHORT QUESTIONS -->
+<div class="card">
+<div class="card-icon">✍</div>
+<div class="card-title">Short Questions</div>
+<div class="card-desc">
+Answer short descriptive questions to test your understanding.
+</div>
+
+<div class="field">
+<input type="text" id="topic" placeholder="Enter Topic">
+</div>
+
+<div class="field">
+<select id="shortSubject">
+<option value="">Select Subject</option>
+<option>Maths</option>
+<option>Science</option>
+<option>Computer Science</option>
+<option>English</option>
+</select>
+</div>
+
+<button onclick="searchTopic()">Start Questions</button>
+</div>
+
+<!-- MOCK TEST -->
+<div class="card">
+<div class="card-icon">🧪</div>
+<div class="card-title">Mock Tests</div>
+<div class="card-desc">
+Simulated exam tests to prepare for real exam environments.
+</div>
+
+<div class="field">
+<select id="subjectType">
+<option value="">Select Suject Type</option>
+<option value="maths">Mathematics</option>
+<option value="java">Java</option>
+<option value="ds">Data Structures</option>
+</select>
+</div>
+
+<div class="field">
+<select id="duration">
+<option value="">Time Duration</option>
+<option value="30">30 Minutes</option>
+<option value="60">1 Hour</option>
+<option value="120">2 Hours</option>
+</select>
+</div>
+
+<p id="timer" style="font-size:20px; color:red; font-weight:bold;"></p>
+
+<button onclick="startMockTest()">Start Mock Test</button>
+</div>
+
+<!-- PREVIOUS YEAR -->
+<div class="card">
+<div class="card-icon">📜</div>
+<div class="card-title">Previous Year Questions</div>
+<div class="card-desc">
+Solve previous year exam questions to understand question patterns.
+</div>
+
+<div class="field">
+<select id="course">
+<option value="">Select Course</option>
+<option value="btech">B.Tech</option>
+<option value="ba">BA</option>
+<option value="mba">MBA</option>
+<option value="ma">MA</option>
+<option value="ms">MS</option>
+<option value="degree">Degree</option>
+</select>
+</div>
+
+<div class="field">
+<select id="year">
+<option value="">Select Year</option>
+<option value="2024">2024</option>
+<option value="2023">2023</option>
+<option value="2022">2022</option>
+<option value="2021">2021</option>
+</select>
+</div>
+
+<button onclick="openPYQ()">Start Practice</button>
+</div>
+
+<!-- AI -->
+<div class="card ai-card">
+<div class="card-icon">🤖</div>
+<div class="card-title">Instant AI Feedback</div>
+<div class="card-desc">
+AI analyzes your answers and gives instant feedback.
+</div>
+
+<div class="field">
+<input type="text" id="aiTopic" placeholder="Enter topic for explanation">
+</div>
+
+<button onclick="getAIFeedback()">Get AI Feedback</button>
+</div>
+
+</div>
+</div>
+
+<script>
+
+// ✅ MCQ
+function openMCQ(){
+let subject=document.getElementById("subject").value;
+let difficulty=document.getElementById("difficulty").value;
+
+if(subject==="" || difficulty===""){
+alert("Please select subject and difficulty");
+return;
+}
+
+window.location.href="mcqtest.html?subject="+subject+"&difficulty="+difficulty;
+}
+
+// ✅ PYQ (FIXED ONLY THIS)
+function openPYQ(){
+
+let course=document.getElementById("course").value;
+let year=document.getElementById("year").value;
+
+if(course==="" || year===""){
+alert("Please select course and year");
+return;
+}
+
+let links={
+btech_2024:"https://vardhamancoe-my.sharepoint.com/personal/itsupport_vardhaman_org1/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fitsupport%5Fvardhaman%5Forg1%2FDocuments%2Fexaminations%2Dprevious%20questions%2F2024%2D25%2FBT%5FV%5FSEM%5FREGULAR%5FDEC%5F2024%20%2Epdf",
+btech_2023:"https://vardhamancoe-my.sharepoint.com/personal/itsupport_vardhaman_org1/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fitsupport%5Fvardhaman%5Forg1%2FDocuments%2Fexaminations%2Dprevious%20questions%2F2024%2D25%2FBT%5FV%5FSEM%5FREGULAR%5FDEC%5F2024%20%2Epdf",
+mba_2024:"https://btu.ac.in/BTU/wp-content/uploads/2019/04/MBA-PAPERS.pdf"
+};
+
+let pdf=links[course+"_"+year];
+window.open(pdf,"_blank");
+
+}
+
+// ✅ AI
+function getAIFeedback(){
+let topic=document.getElementById("aiTopic").value;
+
+if(topic===""){
+alert("Please enter a topic");
+return;
+}
+
+window.open("https://www.google.com/search?q="+encodeURIComponent(topic));
+}
+
+// ✅ MOCK
+function startMockTest(){
+let subject=document.getElementById("subjectType").value;
+let duration=document.getElementById("duration").value;
+
+if(subject==="" || duration===""){
+alert("Please select subject and duration");
+return;
+}
+
+window.location.href="mocktest.html?subject="+subject+"&time="+duration;
+}
+
+// ✅ SHORT QUESTIONS FIX
+function searchTopic(){
+let topic=document.getElementById("topic").value;
+
+if(topic===""){
+alert("Please enter a topic");
+return;
+}
+
+window.open("https://www.google.com/search?q="+encodeURIComponent(topic));
+}
+
+</script>
+
+</body>
+</html>
